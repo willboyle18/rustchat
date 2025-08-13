@@ -26,5 +26,6 @@ async fn main() {
 }
 
 async fn health() -> impl IntoResponse {
+    info!("/health endpoint called");
     (StatusCode::OK, "ok")
 }
