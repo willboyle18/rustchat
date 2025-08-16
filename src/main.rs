@@ -27,7 +27,7 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(health))
         .route("/ws", get(ws_handler))
-        .fallback_service(static_files); // Will serve index.html automatically
+        .fallback_service(static_files);
 
     let listener = TcpListener::bind(addr).await.unwrap();
 
@@ -48,5 +48,10 @@ async fn ws_handler(ws: WebSocketUpgrade) -> Response {
 }
 
 async fn handle_socket(mut socket: WebSocket) {
-    info!("New WebSocket connection established");
+    while let Some(message) = socket.recv().await {
+        let message = if let Ok(message) = message {
+            info!("Got message: {:?}", message);
+        };
+    }
+    info!("Client disconnected");
 }
