@@ -48,5 +48,5 @@ async fn ws_handler(ws: WebSocketUpgrade) -> Response {
 }
 
 async fn handle_socket(mut socket: WebSocket) {
-
+    info!("New WebSocket connection established");
 }
