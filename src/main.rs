@@ -19,6 +19,7 @@ use tracing_subscriber;
 use tower_http::services::{ServeDir, ServeFile};
 use futures::{StreamExt, SinkExt};
 use crate::state::AppState;
+use crate::messages::{ServerMessage, ChatMessage};
 
 #[tokio::main]
 async fn main() {
@@ -59,7 +60,7 @@ async fn handle_socket(socket: WebSocket, state: AppState) {
     let mut rx = state.tx.subscribe();
 
     let _ = state.tx.send(serde_json::to_string(
-        &messages::ServerMessage::System{ message: "A user joined".into() }
+        &ServerMessage::System{ message: "A user joined".into() }
     ).unwrap());
 
     let (mut sender, mut receiver) = socket.split();
@@ -75,8 +76,8 @@ async fn handle_socket(socket: WebSocket, state: AppState) {
     while let Some(Ok(message)) = receiver.next().await {
         match message {
             Message::Text(message) => {
-                if let Ok(messages::ChatMessage::Chat { user, text }) = serde_json::from_str(&message) {
-                    let out = messages::ServerMessage::Chat { user, text };
+                if let Ok(ChatMessage::Chat { user, text }) = serde_json::from_str(&message) {
+                    let out = ServerMessage::Chat { user, text };
                     let _ = state.tx.send(serde_json::to_string(&out).unwrap());
                 }
                 println!("{}", message);
