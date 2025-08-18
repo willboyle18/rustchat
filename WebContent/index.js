@@ -1,6 +1,6 @@
 const socket = new WebSocket("ws://localhost:3000/ws");
 const form = document.getElementById("chat-form");
-const message_list = document.getElementById("message-list");
+const message_board = document.getElementById("message-board");
 const textInput = document.getElementById("chat-input");
 const userInput = document.getElementById("name-input");
 
@@ -24,12 +24,12 @@ form.addEventListener("submit", (e) => {
 socket.onmessage = (event) => {
     const msg = JSON.parse(event.data);
     if (msg.type === "chat") {
-        const new_message = document.createElement("li");
+        const new_message = document.createElement("tr");
         new_message.textContent = msg.text;
-        message_list.appendChild(new_message);
+        message_board.appendChild(new_message);
     } else if (msg.type === "system") {
-        const new_message = document.createElement("li");
+        const new_message = document.createElement("tr");
         new_message.textContent = msg.text;
-        message_list.appendChild(new_message);
+        message_board.appendChild(new_message);
     }
 };

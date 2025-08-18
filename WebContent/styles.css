@@ -1,0 +1,19 @@
+/* Basic table styling for readability */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table tr:nth-child(odd) {
+    background-color: #f2f2f2; /* Light gray for odd rows */
+}
+
+table tr:nth-child(even) {
+    background-color: #ffffff; /* White for even rows */
+}
