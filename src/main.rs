@@ -79,7 +79,7 @@ async fn handle_socket(socket: WebSocket, state: AppState) {
         r#"
         SELECT text
         FROM messages
-        ORDER BY sent_at DESC
+        ORDER BY message_id ASC
         "#
     ).fetch_all(&state.pool).await {
         for row in rows {
