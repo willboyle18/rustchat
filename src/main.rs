@@ -18,6 +18,9 @@ use tracing::{info, warn};
 use tracing_subscriber;
 use tower_http::services::{ServeDir, ServeFile};
 use futures::{StreamExt, SinkExt};
+use sqlx::postgres::{PgPoolOptions, PgRow};
+use sqlx::{FromRow, Row};
+use tokio::sync::broadcast;
 use crate::state::AppState;
 use crate::messages::{ServerMessage, ChatMessage};
 
@@ -25,12 +28,20 @@ use crate::messages::{ServerMessage, ChatMessage};
 async fn main() {
     let _ = tracing_subscriber::fmt().init();
 
+    let (tx, _rx) = broadcast::channel(1024);
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect("postgres://will:abc123@localhost:5432/rustchat_db?sslmode=disable")
+        .await
+        .unwrap();
+    let state = AppState::new(tx, pool);
+
+
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
     let static_files = ServeDir::new("WebContent")
         .not_found_service(ServeFile::new("WebContent/index.html"));
 
-    let state = state::AppState::new();
 
     let app = Router::new()
         .route("/health", get(health))
@@ -58,12 +69,28 @@ pub async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> 
 
 async fn handle_socket(socket: WebSocket, state: AppState) {
     let mut rx = state.tx.subscribe();
+    let (mut sender, mut receiver) = socket.split();
 
     let _ = state.tx.send(serde_json::to_string(
         &ServerMessage::System{ message: "A user joined".into() }
     ).unwrap());
 
-    let (mut sender, mut receiver) = socket.split();
+    if let Ok(rows) = sqlx::query!(
+        r#"
+        SELECT text
+        FROM messages
+        ORDER BY sent_at DESC
+        "#
+    ).fetch_all(&state.pool).await {
+        for row in rows {
+            let out = ServerMessage::Chat { user: "anon".into(), text: row.text };
+            let json = serde_json::to_string(&out).unwrap();
+            if sender.send(Message::Text(json.into())).await.is_err() {
+                return;
+            }
+        }
+    }
+
     let writer_task = tokio::spawn( async move {
         while let Ok(message) = rx.recv().await {
             info!("sending to client: {message}");
@@ -77,6 +104,13 @@ async fn handle_socket(socket: WebSocket, state: AppState) {
         match message {
             Message::Text(message) => {
                 if let Ok(ChatMessage::Chat { user, text }) = serde_json::from_str(&message) {
+                    sqlx::query!(
+                        r#"
+                        INSERT INTO messages(text)
+                        VALUES ($1)
+                        "#,
+                        text
+                    ).execute(&state.pool).await.unwrap();
                     let out = ServerMessage::Chat { user, text };
                     let _ = state.tx.send(serde_json::to_string(&out).unwrap());
                 }

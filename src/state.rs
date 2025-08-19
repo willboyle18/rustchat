@@ -1,14 +1,14 @@
-use std::sync::Arc;
 use tokio::sync::broadcast;
+use sqlx::PgPool;
 
 #[derive(Clone)]
 pub struct AppState {
     pub tx: broadcast::Sender<String>,
+    pub pool: PgPool,
 }
 
 impl AppState {
-    pub fn new() -> Self {
-        let (tx, _rx) = broadcast::channel(1024);
-        Self { tx }
+    pub fn new(tx: broadcast::Sender<String>, pool: PgPool) -> Self {
+        Self { tx, pool }
     }
 }
