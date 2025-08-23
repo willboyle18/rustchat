@@ -6,6 +6,7 @@ DROP TABLE if EXISTS messages;
 CREATE TABLE users (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     username    TEXT NOT NULL UNIQUE,
+    password    TEXT NOT NULL UNIQUE,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
