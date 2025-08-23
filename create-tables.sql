@@ -11,6 +11,7 @@ CREATE TABLE users (
 
 CREATE TABLE messages (
     message_id  BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT REFERENCES users(id) ON DELETE CASCADE,
     text        TEXT NOT NULL CHECK(length(text) <= 4000),
     sent_at     TIMESTAMPTZ NOT NULL default now()
 );
