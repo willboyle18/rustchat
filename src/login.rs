@@ -1,12 +1,31 @@
+#![allow(warnings)]
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Redirect},
     Form,
+    debug_handler
 };
+
+use axum::response::Html;
+use tokio::fs;
+use crate::state::AppState;
+use crate::authorization::{Backend, Credentials};
+use axum::extract::State;
 
 type AuthSession = axum_login::AuthSession<Backend>;
 
-async fn login(
+
+pub async fn login_get() -> Html<String> {
+    let html = fs::read_to_string("WebContent/login.html")
+        .await
+        .unwrap_or_else(|_| "<h1>Error loading login page</h1>".to_string());
+
+    Html(html)
+}
+
+pub async fn login_post(
+    State(_state): State<AppState>,
     mut auth_session: AuthSession,
     Form(creds): Form<Credentials>,
 ) -> impl IntoResponse {
@@ -20,5 +39,5 @@ async fn login(
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     }
 
-    Redirect::to("/protected").into_response()
+    Redirect::to("/ws").into_response()
 }

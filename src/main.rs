@@ -1,22 +1,25 @@
+#![allow(warnings)]
+
 mod state;
 mod messages;
 mod login;
+mod authorization;
+mod protected_routes;
 
 use std::{net::SocketAddr, sync, sync::Arc};
 use tokio::net::{TcpListener, TcpStream};
+use tokio::sync::broadcast;
 use axum::{
     http::StatusCode,
     extract::{
-        ws::{Message, WebSocket, WebSocketUpgrade},
+        ws::{Message, WebSocket, WebSocketUpgrade, Utf8Bytes},
         State,
     },
     response::{Response, Html, IntoResponse, Redirect},
-    routing::{get, get_service},
+    routing::{get, get_service, post},
     Router,
+    debug_handler
 };
-use axum::extract::ws::Utf8Bytes;
-use axum::routing::post;
-
 use axum_login::{
     login_required,
     tower_sessions::{MemoryStore, SessionManagerLayer},
@@ -28,9 +31,10 @@ use tower_http::services::{ServeDir, ServeFile};
 use futures::{StreamExt, SinkExt};
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::{FromRow, Row};
-use tokio::sync::broadcast;
+
 use crate::state::AppState;
 use crate::messages::{ServerMessage, ChatMessage};
+use crate::authorization::Backend;
 
 #[tokio::main]
 async fn main() {
@@ -42,8 +46,16 @@ async fn main() {
         .connect("postgres://will:abc123@localhost:5432/rustchat_db?sslmode=disable")
         .await
         .unwrap();
-    let state = AppState::new(tx, pool);
 
+    let state = AppState::new(tx, pool.clone());
+
+    // Session layer.
+    let session_store = MemoryStore::default();
+    let session_layer = SessionManagerLayer::new(session_store);
+
+    // Auth service.
+    let backend = Backend{pool: pool.clone()};
+    let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
@@ -51,8 +63,12 @@ async fn main() {
         .not_found_service(ServeFile::new("WebContent/login.html"));
 
     let app = Router::new()
-        .route("/health", get(health))
+        .route("/", get(login::login_get))
         .route("/ws", get(ws_handler))
+        .route_layer(login_required!(Backend, login_url = "/login"))
+        // .route("/login", post(login::login_post))
+        .route("/health", get(health))
+        .layer(auth_layer)
         .fallback_service(static_files)
         .with_state(state.clone());
 
@@ -60,7 +76,7 @@ async fn main() {
 
     info!("listening on http://{}", addr);
 
-    axum::serve(listener, app)
+    axum::serve(listener, app.into_make_service())
         .await
         .expect("server error");
 }
@@ -75,6 +91,7 @@ async fn redirect() -> Redirect {
 }
 
 pub async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> Response {
+    println!("new websocket connection: {:?}", ws);
     ws.on_upgrade(move |socket| {handle_socket(socket, state) })
 }
 

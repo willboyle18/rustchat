@@ -1,11 +1,14 @@
-use std::collections::HashMap;
+#![allow(warnings)]
 
 use axum_login::{AuthUser, AuthnBackend, UserId};
+use sqlx::postgres::{PgPoolOptions, PgRow, PgPool};
+use sqlx::{FromRow, Row};
 
 #[derive(Debug, Clone)]
-struct User {
+pub struct User {
     id: i64,
-    pw_hash: Vec<u8>,
+    username: Vec<u8>,
+    password: Vec<u8>,
 }
 
 impl AuthUser for User {
@@ -16,18 +19,20 @@ impl AuthUser for User {
     }
 
     fn session_auth_hash(&self) -> &[u8] {
-        &self.pw_hash
+        &self.password
     }
 }
 
-#[derive(Clone, Default)]
-struct Backend {
-    users: HashMap<i64, User>,
+#[derive(Clone)]
+pub struct Backend {
+    pub pool: PgPool,
 }
 
 #[derive(Clone)]
-struct Credentials {
+pub struct Credentials {
     user_id: i64,
+    username: String,
+    password: String,
 }
 
 impl AuthnBackend for Backend {
@@ -37,15 +42,38 @@ impl AuthnBackend for Backend {
 
     async fn authenticate(
         &self,
-        Credentials { user_id }: Self::Credentials,
+        creds: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
-        Ok(self.users.get(&user_id).cloned())
+        let row = sqlx::query(
+            r#"
+            SELECT id, username, password
+            FROM users
+            WHERE username = $1 AND password = $2
+            "#,
+        )
+        .bind(&creds.username)
+        .bind(&creds.password)
+        .fetch_optional(&self.pool)  // fetch_optional -> Ok(None) if not found
+        .await;
+
+        match row {
+            Ok(Some(row)) => {
+                let user = User {
+                    id: row.get("id"),
+                    username: row.get("username"),
+                    password: row.get("password"),
+                };
+                Ok(Some(user))
+            }
+            Ok(None) => Ok(None),
+            _ => Ok(None),
+        }
     }
 
     async fn get_user(
         &self,
         user_id: &UserId<Self>,
     ) -> Result<Option<Self::User>, Self::Error> {
-        Ok(self.users.get(user_id).cloned())
+        todo!()
     }
 }
