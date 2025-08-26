@@ -4,7 +4,6 @@ mod state;
 mod messages;
 mod login;
 mod authorization;
-mod protected_routes;
 
 use std::{net::SocketAddr, sync, sync::Arc};
 use tokio::net::{TcpListener, TcpStream};
@@ -63,10 +62,10 @@ async fn main() {
         .not_found_service(ServeFile::new("WebContent/login.html"));
 
     let app = Router::new()
-        .route("/", get(login::login_get))
         .route("/ws", get(ws_handler))
         .route_layer(login_required!(Backend, login_url = "/login"))
-        // .route("/login", post(login::login_post))
+        .route("/", get(login::login_get))
+        .route("/login", post(login::login_post))
         .route("/health", get(health))
         .layer(auth_layer)
         .fallback_service(static_files)

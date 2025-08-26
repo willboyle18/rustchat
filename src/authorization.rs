@@ -3,6 +3,7 @@
 use axum_login::{AuthUser, AuthnBackend, UserId};
 use sqlx::postgres::{PgPoolOptions, PgRow, PgPool};
 use sqlx::{FromRow, Row};
+use serde::Deserialize;
 
 #[derive(Debug, Clone)]
 pub struct User {
@@ -28,7 +29,7 @@ pub struct Backend {
     pub pool: PgPool,
 }
 
-#[derive(Clone)]
+#[derive(Deserialize, Clone)]
 pub struct Credentials {
     user_id: i64,
     username: String,

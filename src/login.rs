@@ -11,7 +11,9 @@ use axum::response::Html;
 use tokio::fs;
 use crate::state::AppState;
 use crate::authorization::{Backend, Credentials};
-use axum::extract::State;
+use serde::Deserialize;
+use axum::extract::{State, Json};
+
 
 type AuthSession = axum_login::AuthSession<Backend>;
 
@@ -27,7 +29,7 @@ pub async fn login_get() -> Html<String> {
 pub async fn login_post(
     State(_state): State<AppState>,
     mut auth_session: AuthSession,
-    Form(creds): Form<Credentials>,
+    Json(creds): Json<Credentials>,
 ) -> impl IntoResponse {
     let user = match auth_session.authenticate(creds.clone()).await {
         Ok(Some(user)) => user,
