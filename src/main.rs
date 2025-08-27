@@ -131,13 +131,14 @@ async fn handle_socket(socket: WebSocket, state: AppState) {
         match message {
             Message::Text(message) => {
                 if let Ok(ChatMessage::Chat { user, text }) = serde_json::from_str(&message) {
-                    sqlx::query!(
+                    sqlx::query(
                         r#"
                         INSERT INTO messages(text)
                         VALUES ($1)
                         "#,
-                        text
-                    ).execute(&state.pool).await.unwrap();
+                    )
+                    .bind(&text)
+                    .execute(&state.pool).await.unwrap();
                     let out = ServerMessage::Chat { user, text };
                     let _ = state.tx.send(serde_json::to_string(&out).unwrap());
                 }

@@ -4,12 +4,13 @@ use axum_login::{AuthUser, AuthnBackend, UserId};
 use sqlx::postgres::{PgPoolOptions, PgRow, PgPool};
 use sqlx::{FromRow, Row};
 use serde::Deserialize;
+use url::quirks::{password, username};
 
 #[derive(Debug, Clone)]
 pub struct User {
     id: i64,
-    username: Vec<u8>,
-    password: Vec<u8>,
+    username: String,
+    password: String,
 }
 
 impl AuthUser for User {
@@ -20,7 +21,7 @@ impl AuthUser for User {
     }
 
     fn session_auth_hash(&self) -> &[u8] {
-        &self.password
+        b"testpw"
     }
 }
 
@@ -29,9 +30,8 @@ pub struct Backend {
     pub pool: PgPool,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct Credentials {
-    user_id: i64,
     username: String,
     password: String,
 }
@@ -45,6 +45,10 @@ impl AuthnBackend for Backend {
         &self,
         creds: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
+        println!("hello there");
+
+        println!("username: {}", &creds.username);
+        println!("password: {}", &creds.password);
         let row = sqlx::query(
             r#"
             SELECT id, username, password
@@ -57,13 +61,17 @@ impl AuthnBackend for Backend {
         .fetch_optional(&self.pool)  // fetch_optional -> Ok(None) if not found
         .await;
 
+        println!("did we get here?");
+
         match row {
             Ok(Some(row)) => {
+                println!("hello there");
                 let user = User {
                     id: row.get("id"),
                     username: row.get("username"),
                     password: row.get("password"),
                 };
+                println!("hello again");
                 Ok(Some(user))
             }
             Ok(None) => Ok(None),
@@ -75,6 +83,14 @@ impl AuthnBackend for Backend {
         &self,
         user_id: &UserId<Self>,
     ) -> Result<Option<Self::User>, Self::Error> {
-        todo!()
+        // HARDCODED FOR DEBUGGING PURPOSES
+        let username = String::from("test");
+        let password = String::from("testpw");
+
+        Ok(Some(User {
+            id: 0,
+            username: username,
+            password: password,
+        }))
     }
 }
