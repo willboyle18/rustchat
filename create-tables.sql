@@ -1,6 +1,5 @@
 BEGIN;
 
-
 DROP TABLE if EXISTS messages CASCADE;
 DROP TABLE if EXISTS users CASCADE;
 
@@ -23,5 +22,8 @@ CREATE INDEX index_messages_user_sent ON messages (user_id, sent_at DESC);
 
 INSERT INTO users (username, password)
 VALUES ('test', 'testpw');
+
+ALTER TABLE public.users OWNER TO will;
+ALTER TABLE public.messages OWNER TO will;
 
 COMMIT;
