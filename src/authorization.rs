@@ -4,7 +4,6 @@ use axum_login::{AuthUser, AuthnBackend, UserId};
 use sqlx::postgres::{PgPoolOptions, PgRow, PgPool};
 use sqlx::{FromRow, Row};
 use serde::Deserialize;
-use url::quirks::{password, username};
 
 #[derive(Debug, Clone)]
 pub struct User {
@@ -21,7 +20,7 @@ impl AuthUser for User {
     }
 
     fn session_auth_hash(&self) -> &[u8] {
-        b"testpw"
+        &[] // not implemented so empty slice
     }
 }
 
@@ -74,7 +73,9 @@ impl AuthnBackend for Backend {
                 println!("hello again");
                 Ok(Some(user))
             }
-            Ok(None) => Ok(None),
+            Ok(None) => {
+                Ok(None)
+            },
             _ => Ok(None),
         }
     }
@@ -83,14 +84,27 @@ impl AuthnBackend for Backend {
         &self,
         user_id: &UserId<Self>,
     ) -> Result<Option<Self::User>, Self::Error> {
-        // HARDCODED FOR DEBUGGING PURPOSES
-        let username = String::from("test");
-        let password = String::from("testpw");
+        let row = sqlx::query(
+            r#"
+            SELECT id, username, password
+            FROM users
+            WHERE id = $1
+            "#,
+        )
+        .bind(*user_id)
+        .fetch_optional(&self.pool)  // fetch_optional -> Ok(None) if not found
+        .await;
 
-        Ok(Some(User {
-            id: 0,
-            username: username,
-            password: password,
-        }))
+        match row{
+            Ok(Some(row)) => {
+                let user = User {
+                    id: row.get("id"),
+                    username: row.get("username"),
+                    password: row.get("password"),
+                };
+                Ok(Some(user))
+            }
+            _ => Ok(None)
+        }
     }
 }
