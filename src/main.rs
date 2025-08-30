@@ -50,7 +50,8 @@ async fn main() {
 
     // Session layer.
     let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store);
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_secure(false);
 
     // Auth service.
     let backend = Backend{pool: pool.clone()};
@@ -62,9 +63,10 @@ async fn main() {
         .not_found_service(ServeFile::new("WebContent/login.html"));
 
     let app = Router::new()
+        .route("/", get(|| async { Redirect::to("/login_get") }))
         .route("/ws", get(ws_handler))
-        .route_layer(login_required!(Backend, login_url = "/login"))
-        .route("/", get(login::login_get))
+        .route_layer(login_required!(Backend, login_url = "/login_get"))
+        .route("/login_get", get(login::login_get))
         .route("/login", post(login::login_post))
         .route("/health", get(health))
         .layer(auth_layer)
