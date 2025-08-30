@@ -111,8 +111,10 @@ async fn handle_socket(socket: WebSocket, state: AppState, user_id_from_session:
 
     let username: String = username_query.unwrap().username;
 
+    let system_message = String::from(username.clone() + " joined");
+
     let _ = state.tx.send(serde_json::to_string(
-        &ServerMessage::System{ message: "A user joined".into() }
+        &ServerMessage::System{ message: system_message.into() }
     ).unwrap());
 
     if let Ok(rows) = sqlx::query!(
