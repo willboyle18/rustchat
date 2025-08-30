@@ -29,7 +29,8 @@ socket.onmessage = (event) => {
         messageBoard.appendChild(newMessage);
     } else if (msg.type === "system") {
         const newMessage = document.createElement("tr");
-        newMessage.textContent = msg.text;
+        const strong = document.createElement("strong");
+        newMessage.innerHTML = `<b>System:</b> ${msg.message}`;
         messageBoard.appendChild(newMessage);
     }
 };
