@@ -13,7 +13,7 @@ use crate::state::AppState;
 use crate::authorization::{Backend, Credentials};
 use serde::Deserialize;
 use axum::extract::{State, Json};
-
+use axum_login::AuthUser;
 
 type AuthSession = axum_login::AuthSession<Backend>;
 
@@ -43,6 +43,13 @@ pub async fn login_post(
     } else{
         println!("{:#?}", &user);
     }
+
+    auth_session
+        .session
+        .insert("user_id", user.id())
+        .await
+        .ok();
+
 
     println!("Logged in");
 
