@@ -76,7 +76,6 @@ impl AuthnBackend for Backend {
         &self,
         user_id: &UserId<Self>,
     ) -> Result<Option<Self::User>, Self::Error> {
-        println!("user_id: {}", *user_id);
 
         let row = sqlx::query(
             r#"
