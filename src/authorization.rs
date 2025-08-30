@@ -44,10 +44,6 @@ impl AuthnBackend for Backend {
         &self,
         creds: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
-        println!("hello there");
-
-        println!("username: {}", &creds.username);
-        println!("password: {}", &creds.password);
         let row = sqlx::query(
             r#"
             SELECT id, username, password
@@ -60,17 +56,13 @@ impl AuthnBackend for Backend {
         .fetch_optional(&self.pool)  // fetch_optional -> Ok(None) if not found
         .await;
 
-        println!("did we get here?");
-
         match row {
             Ok(Some(row)) => {
-                println!("hello there");
                 let user = User {
                     id: row.get("id"),
                     username: row.get("username"),
                     password: row.get("password"),
                 };
-                println!("hello again");
                 Ok(Some(user))
             }
             Ok(None) => {
@@ -84,6 +76,8 @@ impl AuthnBackend for Backend {
         &self,
         user_id: &UserId<Self>,
     ) -> Result<Option<Self::User>, Self::Error> {
+        println!("user_id: {}", *user_id);
+
         let row = sqlx::query(
             r#"
             SELECT id, username, password
