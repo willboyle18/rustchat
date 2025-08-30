@@ -1,31 +1,27 @@
-#![allow(warnings)]
-
 mod state;
 mod messages;
 mod login;
 mod authorization;
 
-use std::{net::SocketAddr, sync, sync::Arc};
-use tokio::net::{TcpListener, TcpStream};
+use std::net::SocketAddr;
+use tokio::net::TcpListener;
 use tokio::sync::broadcast;
 use axum::{
     http::StatusCode,
     extract::{
-        ws::{Message, WebSocket, WebSocketUpgrade, Utf8Bytes},
+        ws::{Message, WebSocket, WebSocketUpgrade},
         State,
     },
-    response::{Response, Html, IntoResponse, Redirect},
-    routing::{get, get_service, post},
+    response::{Response, IntoResponse, Redirect},
+    routing::{get, post},
     Router,
-    debug_handler
 };
 use axum_login::{login_required, tower_sessions::{MemoryStore, SessionManagerLayer}, AuthManagerLayerBuilder, AuthSession};
-use tracing::{info, warn};
+use tracing::info;
 use tracing_subscriber;
 use tower_http::services::{ServeDir, ServeFile};
 use futures::{StreamExt, SinkExt};
-use sqlx::postgres::{PgPoolOptions, PgRow};
-use sqlx::{FromRow, Row};
+use sqlx::postgres::PgPoolOptions;
 
 use crate::state::AppState;
 use crate::messages::{ServerMessage, ChatMessage};
@@ -84,10 +80,6 @@ async fn health() -> impl IntoResponse {
     (StatusCode::OK, "ok")
 }
 
-async fn redirect() -> Redirect {
-    Redirect::to("/login")
-}
-
 pub async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>, auth: AuthSession<Backend>) -> Response {
     let user_id_from_session = auth.session.get::<i64>("user_id").await.ok().flatten().unwrap();
 
@@ -133,7 +125,7 @@ async fn handle_socket(socket: WebSocket, state: AppState, user_id_from_session:
         }
     }
 
-    let writer_task = tokio::spawn( async move {
+    let _writer_task = tokio::spawn( async move {
         while let Ok(message) = rx.recv().await {
             info!("sending to client: {message}");
             if sender.send(Message::Text(message.into())).await.is_err() {

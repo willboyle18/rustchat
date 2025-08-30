@@ -1,15 +1,11 @@
-#![allow(warnings)]
-
 use axum_login::{AuthUser, AuthnBackend, UserId};
-use sqlx::postgres::{PgPoolOptions, PgRow, PgPool};
-use sqlx::{FromRow, Row};
+use sqlx::postgres::PgPool;
+use sqlx::Row;
 use serde::Deserialize;
 
 #[derive(Debug, Clone)]
 pub struct User {
     id: i64,
-    username: String,
-    password: String,
 }
 
 impl AuthUser for User {
@@ -70,8 +66,6 @@ impl AuthnBackend for Backend {
             Ok(Some(row)) => {
                 let user = User {
                     id: row.get("id"),
-                    username: row.get("username"),
-                    password: row.get("password"),
                 };
                 Ok(Some(user))
             }
@@ -102,8 +96,6 @@ impl AuthnBackend for Backend {
             Ok(Some(row)) => {
                 let user = User {
                     id: row.get("id"),
-                    username: row.get("username"),
-                    password: row.get("password"),
                 };
                 Ok(Some(user))
             }

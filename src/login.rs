@@ -1,19 +1,12 @@
-#![allow(warnings)]
-
 use axum::{
     http::StatusCode,
-    response::{IntoResponse, Redirect},
-    Form,
-    debug_handler
+    response::IntoResponse,
 };
 
-use sqlx::postgres::{PgPoolOptions, PgRow, PgPool};
-use sqlx::{FromRow, Row};
 use axum::response::Html;
 use tokio::fs;
 use crate::state::AppState;
 use crate::authorization::{Backend, Credentials};
-use serde::Deserialize;
 use axum::extract::{State, Json};
 use axum_login::AuthUser;
 
