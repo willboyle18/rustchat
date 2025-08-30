@@ -4,14 +4,14 @@ use serde::{Deserialize, Serialize};
 #[serde(tag = "type")]
 pub enum ChatMessage {
     #[serde(rename = "chat")]
-    Chat { user: String, text: String },
+    Chat { text: String },
 }
 
 #[derive(Serialize)]
 #[serde(tag = "type")]
 pub enum ServerMessage {
     #[serde(rename = "chat")]
-    Chat { user: String, text: String },
+    Chat { username: String, text: String },
     #[serde(rename = "system")]
     System {message: String},
 }

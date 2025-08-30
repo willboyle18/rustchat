@@ -99,7 +99,7 @@ async fn handle_socket(socket: WebSocket, state: AppState, user_id_from_session:
 
     let username_query = sqlx::query!(
         r#"
-        SELECT username
+        SELECT id, username
         FROM users
         WHERE id = $1
         "#,
@@ -110,21 +110,19 @@ async fn handle_socket(socket: WebSocket, state: AppState, user_id_from_session:
 
     let username: String = username_query.unwrap().username;
 
-    println!("username: {}", username);
-
     let _ = state.tx.send(serde_json::to_string(
         &ServerMessage::System{ message: "A user joined".into() }
     ).unwrap());
 
     if let Ok(rows) = sqlx::query!(
         r#"
-        SELECT text
+        SELECT username, text
         FROM messages
         ORDER BY message_id ASC
         "#
     ).fetch_all(&state.pool).await {
         for row in rows {
-            let out = ServerMessage::Chat { user: "anon".into(), text: row.text };
+            let out = ServerMessage::Chat { username: row.username, text: row.text };
             let json = serde_json::to_string(&out).unwrap();
             if sender.send(Message::Text(json.into())).await.is_err() {
                 return;
@@ -144,16 +142,18 @@ async fn handle_socket(socket: WebSocket, state: AppState, user_id_from_session:
     while let Some(Ok(message)) = receiver.next().await {
         match message {
             Message::Text(message) => {
-                if let Ok(ChatMessage::Chat { user, text }) = serde_json::from_str(&message) {
-                    sqlx::query(
+                if let Ok(ChatMessage::Chat { text }) = serde_json::from_str(&message) {
+                    sqlx::query!(
                         r#"
-                        INSERT INTO messages(text)
-                        VALUES ($1)
+                        INSERT INTO messages(user_id, username, text)
+                        VALUES ($1, $2, $3)
                         "#,
+                        user_id_from_session,
+                        username,
+                        text
                     )
-                    .bind(&text)
                     .execute(&state.pool).await.unwrap();
-                    let out = ServerMessage::Chat { user, text };
+                    let out = ServerMessage::Chat { username: username.clone(), text: text };
                     let _ = state.tx.send(serde_json::to_string(&out).unwrap());
                 }
                 println!("{}", message);

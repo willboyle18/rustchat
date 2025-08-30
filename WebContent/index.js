@@ -10,7 +10,6 @@ form.addEventListener("submit", (e) => {
 
     const msg = {
         type: "chat",
-        user: userInput.value || "Anonymous",
         text: textInput.value
     };
 
@@ -23,9 +22,13 @@ form.addEventListener("submit", (e) => {
 
 socket.onmessage = (event) => {
     const msg = JSON.parse(event.data);
+    console.log(msg);
+
+
     if (msg.type === "chat") {
         const newMessage = document.createElement("tr");
-        newMessage.textContent = msg.text;
+        const strong = document.createElement("strong");
+        newMessage.innerHTML = `<b>${msg.username}:</b> ${msg.text}`;
         messageBoard.appendChild(newMessage);
     } else if (msg.type === "system") {
         const newMessage = document.createElement("tr");
