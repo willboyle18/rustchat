@@ -3,6 +3,16 @@ const form = document.getElementById("chat-form");
 const messageBoard = document.getElementById("message-board");
 const textInput = document.getElementById("chat-input");
 
+const BOTTOM_EPS = 16;
+
+function isAtBottom(el) {
+    return el.scrollTop + el.clientHeight >= el.scrollHeight - BOTTOM_EPS;
+}
+
+function scrollToBottom(el) {
+    el.scrollTop = el.scrollHeight;
+}
+
 form.addEventListener("submit", (e) => {
     e.preventDefault();
     if (socket.readyState !== WebSocket.OPEN) return;
@@ -21,6 +31,7 @@ socket.onmessage = (event) => {
     const msg = JSON.parse(event.data);
     console.log(msg);
 
+    const wasAtBottom = isAtBottom(messageBoard);
 
     if (msg.type === "chat") {
         const newMessage = document.createElement("tr");
@@ -30,5 +41,9 @@ socket.onmessage = (event) => {
         const newMessage = document.createElement("tr");
         newMessage.innerHTML = `<b>System:</b> ${msg.message}`;
         messageBoard.appendChild(newMessage);
+    }
+
+    if (wasAtBottom) {
+        scrollToBottom(messageBoard);
     }
 };
