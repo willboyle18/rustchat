@@ -64,6 +64,11 @@ pub async fn create_new_user(
 ) -> impl IntoResponse {
     println!("{:#?}", &creds);
 
+    if creds.get_username().to_lowercase() == "system" {
+        println!("Cannot name yourself system");
+        return (StatusCode::CONFLICT, "system is restricted").into_response();
+    }
+
     let row = sqlx::query!(
         r#"
         SELECT username
