@@ -2,7 +2,6 @@ const socket = new WebSocket("ws://127.0.0.1:3000/ws");
 const form = document.getElementById("chat-form");
 const messageBoard = document.getElementById("message-board");
 const textInput = document.getElementById("chat-input");
-const userInput = document.getElementById("name-input");
 
 form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -17,8 +16,6 @@ form.addEventListener("submit", (e) => {
     textInput.value = "";
     textInput.focus();
 });
-
-
 
 socket.onmessage = (event) => {
     const msg = JSON.parse(event.data);

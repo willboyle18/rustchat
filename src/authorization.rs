@@ -35,6 +35,16 @@ pub struct Credentials {
     password: String,
 }
 
+impl Credentials {
+    pub fn get_username(&self) -> &String {
+        &self.username
+    }
+
+    pub fn get_password(&self) -> &String {
+        &self.password
+    }
+}
+
 impl AuthnBackend for Backend {
     type User = User;
     type Credentials = Credentials;

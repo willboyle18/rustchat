@@ -7,6 +7,8 @@ use axum::{
     debug_handler
 };
 
+use sqlx::postgres::{PgPoolOptions, PgRow, PgPool};
+use sqlx::{FromRow, Row};
 use axum::response::Html;
 use tokio::fs;
 use crate::state::AppState;
@@ -52,6 +54,43 @@ pub async fn login_post(
 
 
     println!("Logged in");
+
+    StatusCode::OK.into_response()
+}
+
+pub async fn create_new_user(
+    State(state): State<AppState>,
+    Json(creds): Json<Credentials>
+) -> impl IntoResponse {
+    println!("{:#?}", &creds);
+
+    let row = sqlx::query!(
+        r#"
+        SELECT username
+        FROM users
+        WHERE username = $1
+        "#,
+        creds.get_username()
+    )
+    .fetch_optional(&state.pool)
+    .await;
+
+    if row.unwrap().is_some() {
+        println!("User already exists");
+        return (StatusCode::CONFLICT, "username taken").into_response();
+    }
+
+    sqlx::query!(
+        r#"
+        INSERT INTO users(username, password)
+        VALUES ($1, $2)
+        "#,
+        creds.get_username(),
+        creds.get_password()
+    )
+    .execute(&state.pool).await.unwrap();
+
+    println!("Created new user");
 
     StatusCode::OK.into_response()
 }

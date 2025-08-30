@@ -64,6 +64,7 @@ async fn main() {
         .route_layer(login_required!(Backend, login_url = "/login_get"))
         .route("/login_get", get(login::login_get))
         .route("/login", post(login::login_post))
+        .route("/create_user", post(login::create_new_user))
         .route("/health", get(health))
         .layer(auth_layer)
         .fallback_service(static_files)
