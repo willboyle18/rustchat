@@ -35,6 +35,7 @@ loginForm.addEventListener("submit", (e) => {
             const data = await response.json().catch(() => null); // fallback if not JSON
             if (response.ok) {
                 console.log(`Success (${response.status})`, data);
+                window.location.href = "index.html";
             } else {
                 console.warn(`Error (${response.status})`, data || response.statusText);
             }
