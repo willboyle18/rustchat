@@ -24,12 +24,10 @@ socket.onmessage = (event) => {
 
     if (msg.type === "chat") {
         const newMessage = document.createElement("tr");
-        const strong = document.createElement("strong");
         newMessage.innerHTML = `<b>${msg.username}:</b> ${msg.text}`;
         messageBoard.appendChild(newMessage);
     } else if (msg.type === "system") {
         const newMessage = document.createElement("tr");
-        const strong = document.createElement("strong");
         newMessage.innerHTML = `<b>System:</b> ${msg.message}`;
         messageBoard.appendChild(newMessage);
     }
