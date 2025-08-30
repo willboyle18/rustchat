@@ -23,6 +23,9 @@ CREATE INDEX index_messages_user_sent ON messages (user_id, sent_at DESC);
 INSERT INTO users (username, password)
 VALUES ('test', 'testpw');
 
+INSERT INTO users (username, password)
+VALUES ('test2', 'testpw');
+
 ALTER TABLE public.users OWNER TO will;
 ALTER TABLE public.messages OWNER TO will;
 
