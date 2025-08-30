@@ -1,6 +1,3 @@
-/* =========================================================
-   Base layout & theme (ALWAYS DARK)
-   ========================================================= */
 :root {
     --page-bg: #0e1116;
     --text: #eaeaea;
@@ -21,9 +18,6 @@
     --shadow-header: 0 2px 6px rgba(0,0,0,0.35);
 }
 
-/* =========================================================
-   Page layout
-   ========================================================= */
 body {
     margin: 0;
     font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -45,42 +39,27 @@ h1 {
     box-shadow: var(--shadow-header);
 }
 
-/* =========================================================
-   Message board (full-width rows)
-   ========================================================= */
 #message-board {
     flex: 1;
     overflow-y: auto;
     scroll-behavior: smooth;
 
-    display: block;  /* table -> scrolling list */
+    display: block;
     padding: 0;
     background: var(--board-bg);
 }
 
-/* Each message row spans full width */
 #message-board tr {
     display: block;
-    width: 100%;
-    margin: 0;
     padding: 10px 16px;
-    background: transparent;
-    border-radius: 0;
-    max-width: none;
-    word-wrap: break-word;
     overflow-wrap: anywhere;
 }
 
-/* separators + zebra striping */
 #message-board tr + tr { border-top: 1px solid var(--row-border); }
 #message-board tr:nth-child(odd) { background: var(--row-zebra); }
 
-/* username styling */
 #message-board tr b { margin-right: 6px; }
 
-/* =========================================================
-   Input bar
-   ========================================================= */
 #chat-form {
     display: flex;
     padding: 12px;
@@ -94,7 +73,7 @@ h1 {
     border-radius: 20px;
     border: 1px solid var(--input-border);
     font-size: 14px;
-    background: #0f1520;    /* dark field */
+    background: #0f1520;
     color: var(--text);
 }
 
@@ -120,12 +99,6 @@ h1 {
     background: var(--button-bg-hover);
 }
 
-
-/* =============
-   Login page
-   ============= */
-
-/* Keep the login page content centered-ish and readable */
 h2 {
     width: min(420px, 92%);
     margin: 18px auto 8px;
@@ -134,7 +107,6 @@ h2 {
     font-weight: 600;
 }
 
-/* Card-like forms */
 #login-form,
 #create-user-form {
     width: min(420px, 92%);
@@ -149,7 +121,6 @@ h2 {
     gap: 12px;
 }
 
-/* Inputs */
 #login-form input,
 #create-user-form input {
     padding: 12px 14px;
@@ -167,7 +138,6 @@ h2 {
     box-shadow: 0 0 0 2px color-mix(in oklab, var(--input-focus) 30%, transparent);
 }
 
-/* Buttons */
 #login-form button,
 #create-user-form button {
     padding: 12px 14px;
@@ -185,19 +155,11 @@ h2 {
     background: var(--button-bg-hover);
 }
 
-/* Subtle helper layout for stacked inputs */
 #login-form input + input,
 #create-user-form input + input {
     margin-top: 2px;
 }
 
-/* Make the page breathe a bit below the header */
 body > h1 + h2 {
     margin-top: 20px;
-}
-
-/* Optional tiny helper text style */
-#login-form small,
-#create-user-form small {
-    color: #9aa1ac;
 }
