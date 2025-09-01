@@ -1,0 +1,27 @@
+services:
+  api:
+    image: willboyle18/rustchat
+    environment:
+      DATABASE_URL: "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-rustchat_db}"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+  db:
+    image: postgres:15.2-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./create-tables.sql:/docker-entrypoint-initdb.d/create-tables.sql:ro
+
+volumes:
+  db: {}

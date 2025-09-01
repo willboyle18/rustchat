@@ -27,7 +27,7 @@ VALUES ('test', 'testpw');
 INSERT INTO users (username, password)
 VALUES ('test2', 'testpw');
 
-ALTER TABLE public.users OWNER TO will;
-ALTER TABLE public.messages OWNER TO will;
+ALTER TABLE public.users OWNER TO postgres;
+ALTER TABLE public.messages OWNER TO postgres;
 
 COMMIT;

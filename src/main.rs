@@ -4,6 +4,7 @@ mod login;
 mod authorization;
 
 use std::net::SocketAddr;
+use std::env;
 use tokio::net::TcpListener;
 use tokio::sync::broadcast;
 use axum::{
@@ -34,7 +35,8 @@ async fn main() {
     let (tx, _rx) = broadcast::channel(1024);
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect("postgres://will:abc123@localhost:5432/rustchat_db?sslmode=disable")
+        .connect(&env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set"))
         .await
         .unwrap();
 
