@@ -12,7 +12,7 @@ const newPasswordInput = document.getElementById("new-password-input");
 const confirmPasswordInput = document.getElementById("confirm-password-input");
 
 function loginFetch(userInfo) {
-    fetch('http://127.0.0.1:3000/login', {
+    fetch('/login', {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

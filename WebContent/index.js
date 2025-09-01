@@ -1,4 +1,4 @@
-const socket = new WebSocket("ws://127.0.0.1:3000/ws");
+const socket = new WebSocket(`ws://${location.host}/ws`);
 const form = document.getElementById("chat-form");
 const messageBoard = document.getElementById("message-board");
 const textInput = document.getElementById("chat-input");
