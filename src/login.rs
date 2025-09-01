@@ -9,6 +9,7 @@ use crate::state::AppState;
 use crate::authorization::{Backend, Credentials};
 use axum::extract::{State, Json};
 use axum_login::AuthUser;
+use tracing::info;
 
 type AuthSession = axum_login::AuthSession<Backend>;
 
@@ -26,7 +27,6 @@ pub async fn login_post(
     mut auth_session: AuthSession,
     Json(creds): Json<Credentials>,
 ) -> impl IntoResponse {
-    println!("{:#?}", &creds);
     let user = match auth_session.authenticate(creds.clone()).await {
         Ok(Some(user)) => user,
         Ok(None) => return StatusCode::UNAUTHORIZED.into_response(),
@@ -55,8 +55,6 @@ pub async fn create_new_user(
     State(state): State<AppState>,
     Json(creds): Json<Credentials>
 ) -> impl IntoResponse {
-    println!("{:#?}", &creds);
-
     if creds.get_username().to_lowercase() == "system" {
         println!("Cannot name yourself system");
         return (StatusCode::CONFLICT, "system is restricted").into_response();
@@ -88,7 +86,7 @@ pub async fn create_new_user(
     )
     .execute(&state.pool).await.unwrap();
 
-    println!("Created new user");
+    info!("Created new user");
 
     StatusCode::OK.into_response()
 }

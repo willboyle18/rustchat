@@ -11,9 +11,6 @@ const newUsernameInput = document.getElementById("new-username-input");
 const newPasswordInput = document.getElementById("new-password-input");
 const confirmPasswordInput = document.getElementById("confirm-password-input");
 
-
-console.log("login.js loaded");
-
 function loginFetch(userInfo) {
     fetch('http://127.0.0.1:3000/login', {
         method: "POST",

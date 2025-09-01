@@ -29,7 +29,6 @@ form.addEventListener("submit", (e) => {
 
 socket.onmessage = (event) => {
     const msg = JSON.parse(event.data);
-    console.log(msg);
 
     const wasAtBottom = isAtBottom(messageBoard);
 

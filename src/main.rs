@@ -155,14 +155,13 @@ async fn handle_socket(socket: WebSocket, state: AppState, user_id_from_session:
                     let out = ServerMessage::Chat { username: username.clone(), text: text };
                     let _ = state.tx.send(serde_json::to_string(&out).unwrap());
                 }
-                println!("{}", message);
             }
             Message::Close(frame) => {
                 info!("client closed: {:?}", frame);
                 break;
             }
             _ => {
-                println!("Unhandled message: {:?}", message);
+                info!("Unhandled message: {:?}", message);
             }
         }
     }
