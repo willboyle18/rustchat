@@ -9,5 +9,6 @@ RUN cargo build --release --target x86_64-unknown-linux-musl
 # Create a new stage with a minimal image
 FROM scratch
 COPY --from=builder /rustchat/target/x86_64-unknown-linux-musl/release/rustchat /rustchat
+COPY WebContent /WebContent
 ENTRYPOINT ["/rustchat"]
 EXPOSE 3000

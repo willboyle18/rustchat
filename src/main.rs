@@ -42,6 +42,8 @@ async fn main() {
 
     let state = AppState::new(tx, pool.clone());
 
+    sqlx::migrate!().run(&pool).await;
+
     // Session layer.
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
@@ -51,7 +53,7 @@ async fn main() {
     let backend = Backend{pool: pool.clone()};
     let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
 
     let static_files = ServeDir::new("WebContent")
         .not_found_service(ServeFile::new("WebContent/login.html"));
