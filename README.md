@@ -25,6 +25,10 @@ docker compose up --build
 ```
 Once running, open [http://localhost:3000](http://localhost:3000).
 
+## Demo
+
+![RustChat Demo](media/rustchat_demo.gif)
+
 ## Tech Stack
 - **Rust** - backend programming language
 - **Axum** - web framework
