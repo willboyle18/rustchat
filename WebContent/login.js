@@ -57,7 +57,7 @@ createUserForm.addEventListener("submit", (e) => {
         password: newPasswordInput.value,
     };
 
-    fetch('http://127.0.0.1:3000/create_user', {
+    fetch('/create_user', {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
