@@ -42,7 +42,7 @@ async fn main() {
 
     let state = AppState::new(tx, pool.clone());
 
-    sqlx::migrate!().run(&pool).await;
+    let _ = sqlx::migrate!().run(&pool).await;
 
     // Session layer.
     let session_store = MemoryStore::default();
